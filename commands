@@ -1,0 +1,79 @@
+#!/bin/bash
+set -e;
+
+JENKINS_IMAGE=jenkins:latest
+PLUGIN_ROOT="$(dirname ${0})"
+
+f_is_running() {
+   local l_id
+
+   l_id=$(docker ps | grep "$JENKINS_IMAGE" |  awk '{print $1}')
+
+   printf "${l_id}"
+   return 0
+}
+
+# Check if name is specified
+if [[ $1 == jenkins:* ]]; then
+    :
+fi
+
+case "$1" in
+
+  jenkins:start)
+    ID="$(f_is_running)"
+    if [ -z "${ID}" ] ; then
+      docker run -d -p 8080:8080 -p 50000:50000 "${JENKINS_IMAGE}" >/dev/null
+      echo "Jenkins has started"
+     "${PLUGIN_ROOT}/commands" jenkins:info
+    else
+      echo "Jenkins is already up and running."
+    fi
+    ;;
+
+  jenkins:stop)
+    ID="$(f_is_running)"
+    if [ -n "${ID}" ] ; then
+      docker stop "${ID}" >/dev/null
+      echo "Jenkins has stopped."
+    else
+      echo "Jenkins is not running."
+    fi
+    ;;
+
+  jenkins:info)
+    ID="$(f_is_running)"
+    if [ -n "${ID}" ]; then
+      IP=$(docker inspect $ID | grep IPAddress | awk '{ print $2 }' | tr -d ',"')
+      PORT=$(docker port $ID 8080 | cut -d":" -f2)
+      BACKDOOR=$(docker port $ID 50000 | cut -d":" -f2)
+      echo
+      echo "       Host: $IP"
+      echo "       Public port: $PORT"
+      echo "       Public port for attached slave agents: $BACKDOOR"
+      echo
+    else
+      echo "Jenkins is not running."
+    fi
+    ;;
+
+  jenkins:logs)
+    ID="$(f_is_running)"
+    if [ -n "${ID}" ] ; then
+      docker logs -f -t "${ID}" # | tail -n 100
+    else
+      echo "Jenkins is not running."
+    fi
+    ;;
+
+  help)
+    cat && cat<<EOF
+    jenkins:start            Start Jenkins
+    jenkins:stop             Stop Jenkins
+    jenkins:info             Display container information
+    jenkins:logs             Display last logs from Jenkins container
+EOF
+    ;;
+
+esac
+
