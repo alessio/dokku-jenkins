@@ -41,7 +41,7 @@ case "$1" in
     fi
     ;;
 
-  jenkins:info)
+  jenkins | jenkins:info)
     ID="$(f_is_running)"
     if [ -n "${ID}" ]; then
       IP=$(docker inspect $ID | grep IPAddress | awk '{ print $2 }' | tr -d ',"')
@@ -67,12 +67,16 @@ case "$1" in
     ;;
 
   help)
-    cat && cat<<EOF
-    jenkins:start            Start Jenkins
-    jenkins:stop             Stop Jenkins
-    jenkins:info             Display container information
-    jenkins:logs             Display last logs from Jenkins container
+    cat<<EOF
+    jenkins, Display container information
+    jenkins:start, Start Jenkins
+    jenkins:stop, Stop Jenkins
+    jenkins:logs, Display last logs from Jenkins container
 EOF
+    ;;
+
+  *)
+    exit $DOKKU_NOT_IMPLEMENTED_EXIT
     ;;
 
 esac
