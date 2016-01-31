@@ -13,10 +13,6 @@ f_is_running() {
    return 0
 }
 
-# Check if name is specified
-if [[ $1 == jenkins:* ]]; then
-    :
-fi
 
 case "$1" in
 
