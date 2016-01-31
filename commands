@@ -2,7 +2,6 @@
 set -e;
 
 JENKINS_IMAGE=jenkins:latest
-PLUGIN_ROOT="$(dirname ${0})"
 
 f_is_running() {
    local l_id
@@ -21,7 +20,7 @@ case "$1" in
     if [ -z "${ID}" ] ; then
       docker run -d -p 8080:8080 -p 50000:50000 "${JENKINS_IMAGE}" >/dev/null
       echo "Jenkins has started"
-     "${PLUGIN_ROOT}/commands" jenkins:info
+      dokku jenkins
     else
       echo "Jenkins is already up and running."
     fi
@@ -76,4 +75,3 @@ EOF
     ;;
 
 esac
-
